@@ -2,553 +2,211 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Letterbank v0.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Letterbank v0.2</title>
 <style>
-  :root{
-    --bg:#f3f0e8;
-    --panel:#fffdf7;
-    --ink:#25231f;
-    --muted:#77736a;
-    --line:#d8d2c5;
-    --tile:#ffffff;
-    --tile-used:#cfcac0;
-    --shadow:0 8px 24px rgba(0,0,0,.08);
-    --radius:18px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background:linear-gradient(180deg,#eee9df,#f7f5ef 35%);
-    color:var(--ink);
-  }
-  header{
-    padding:28px 24px 12px;
-    max-width:1200px;
-    margin:auto;
-  }
-  h1{
-    margin:0;
-    font-size:clamp(2rem,5vw,4.5rem);
-    letter-spacing:-.055em;
-    line-height:.92;
-  }
-  .tagline{
-    margin-top:8px;
-    color:var(--muted);
-    font-size:1rem;
-  }
-  main{
-    max-width:1200px;
-    margin:auto;
-    padding:16px 24px 40px;
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 330px;
-    gap:20px;
-  }
-  .stack{display:grid;gap:18px}
-  .card{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:18px;
-  }
-  .inputrow{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:10px;
-  }
-  input[type=text]{
-    width:100%;
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:12px;
-    padding:14px 16px;
-    font:inherit;
-    font-size:1.05rem;
-    outline:none;
-  }
-  input[type=text]:focus{border-color:#9c9587}
-  button{
-    border:1px solid var(--line);
-    background:#fff;
-    color:var(--ink);
-    border-radius:12px;
-    padding:12px 14px;
-    font:inherit;
-    font-weight:700;
-    cursor:pointer;
-  }
-  button:hover{transform:translateY(-1px)}
-  .primary{background:#25231f;color:white;border-color:#25231f}
-  .tiny{padding:7px 10px;font-size:.85rem}
-  .sectiontitle{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:12px;
-  }
-  .sectiontitle h2{
-    font-size:1rem;
-    margin:0;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-  }
-  .status{
-    color:var(--muted);
-    font-size:.85rem;
-  }
-  .workspace{
-    min-height:130px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-content:flex-start;
-    padding:10px 0 4px;
-  }
-  .blank{
-    width:31px;
-    height:42px;
-    border-bottom:2px solid #aaa396;
-    display:grid;
-    place-items:center;
-    font-weight:800;
-    font-size:1.15rem;
-  }
-  .token{
-    display:inline-flex;
-    gap:1px;
-    border-radius:12px;
-    overflow:hidden;
-    border:2px solid rgba(0,0,0,.08);
-    cursor:pointer;
-  }
-  .token span{
-    width:31px;
-    height:42px;
-    display:grid;
-    place-items:center;
-    font-weight:900;
-    color:#151515;
-    background:var(--token-color,#d9e8ff);
-  }
-  .joiner{
-    display:inline-flex;
-    align-items:center;
-    padding:0 10px;
-    height:42px;
-    border-radius:10px;
-    background:#ece8df;
-    color:#5e594f;
-    font-weight:800;
-    cursor:pointer;
-  }
-  .lettergrid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(42px,1fr));
-    gap:8px;
-  }
-  .tile{
-    aspect-ratio:1/1;
-    background:var(--tile);
-    border:1px solid var(--line);
-    border-radius:10px;
-    display:grid;
-    place-items:center;
-    font-size:1.15rem;
-    font-weight:900;
-    user-select:none;
-    cursor:pointer;
-    transition:.15s ease;
-  }
-  .tile.selected{
-    outline:3px solid #25231f;
-    transform:translateY(-2px);
-  }
-  .tile.used{
-    background:var(--tile-used);
-    color:#8a857b;
-    cursor:not-allowed;
-    text-decoration:line-through;
-  }
-  .compose{
-    display:grid;
-    grid-template-columns:1fr auto auto;
-    gap:8px;
-    margin-top:12px;
-  }
-  .selectedreadout{
-    min-height:46px;
-    border:1px dashed #bdb6a8;
-    border-radius:12px;
-    padding:10px 12px;
-    display:flex;
-    align-items:center;
-    font-weight:900;
-    letter-spacing:.08em;
-    background:#faf8f2;
-  }
-  .joins{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-  }
-  .sidebar{
-    position:sticky;
-    top:16px;
-    height:fit-content;
-  }
-  .suggestions{
-    display:grid;
-    gap:8px;
-    max-height:62vh;
-    overflow:auto;
-    padding-right:3px;
-  }
-  .suggestion{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:8px;
-    width:100%;
-    text-align:left;
-  }
-  .suggestion small{color:var(--muted);font-weight:600}
-  .empty{
-    color:var(--muted);
-    padding:10px 2px;
-    line-height:1.45;
-  }
-  .legend{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-top:10px;
-  }
-  .chip{
-    border-radius:999px;
-    padding:5px 9px;
-    font-size:.8rem;
-    font-weight:800;
-    border:1px solid rgba(0,0,0,.08);
-  }
-  @media (max-width:820px){
-    main{grid-template-columns:1fr}
-    .sidebar{position:static}
-    .suggestions{max-height:none}
-  }
+:root{--bg:#f2efe7;--panel:#fffdf7;--ink:#25231f;--muted:#78736a;--line:#d7d1c5;--used:#d0cbc1;--danger:#b74a45;--shadow:0 8px 24px rgba(0,0,0,.075);--radius:18px}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#ece8df 0,#f7f5ef 34%);color:var(--ink)}
+button,input{font:inherit} header{max-width:900px;margin:auto;padding:28px 18px 10px}
+h1{margin:0;font-size:clamp(2.5rem,12vw,5rem);letter-spacing:-.06em;line-height:.9}.tagline{margin-top:9px;color:var(--muted)}
+main{max-width:900px;margin:auto;padding:14px 18px 50px;display:grid;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:17px}
+.sectiontitle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+h2{margin:0;font-size:.92rem;text-transform:uppercase;letter-spacing:.09em}.status{color:var(--muted);font-size:.84rem}
+.inputrow{display:grid;grid-template-columns:1fr auto;gap:9px}
+input[type=text]{width:100%;border:1px solid var(--line);background:white;border-radius:12px;padding:13px 14px;color:var(--ink);outline:none}
+input[type=text]:focus{border-color:#918a7e;box-shadow:0 0 0 3px rgba(37,35,31,.06)}
+button{border:1px solid var(--line);background:white;color:var(--ink);border-radius:11px;padding:10px 13px;font-weight:750;cursor:pointer}
+button:active{transform:translateY(1px)}.primary{background:var(--ink);color:white;border-color:var(--ink)}.tiny{padding:7px 9px;font-size:.82rem}
+.arrangementWrap{position:relative;border:1px dashed #c9c2b5;border-radius:14px;background:#faf8f2;min-height:150px;padding:14px;cursor:text;transition:.15s}
+.arrangementWrap:focus-within{border-color:#8e877a;box-shadow:0 0 0 3px rgba(37,35,31,.05)}
+.workspace{min-height:94px;display:flex;flex-wrap:wrap;align-content:flex-start;align-items:flex-start;gap:8px}
+.blank{width:28px;height:38px;border-bottom:2px solid #aaa397}
+.token{display:inline-flex;border:2px solid rgba(0,0,0,.07);border-radius:11px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;position:relative;transition:transform .12s,opacity .12s}
+.token.dragging{opacity:.55;transform:scale(.97);cursor:grabbing}.token.dropbefore{box-shadow:-5px 0 0 #25231f}.token.dropafter{box-shadow:5px 0 0 #25231f}
+.token span{width:29px;height:39px;display:grid;place-items:center;background:var(--token-color,#d9e8ff);color:#171614;font-weight:900;font-size:1.03rem}
+.joiner{display:inline-flex;align-items:center;min-height:43px;padding:0 10px;border-radius:10px;background:#e9e5dc;border:2px solid rgba(0,0,0,.05);color:#5d584f;font-weight:800;cursor:grab;user-select:none;touch-action:none}
+.typingHint{margin-top:10px;font-size:.82rem;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#ghostInput{position:absolute;left:-10000px;width:1px;height:1px;opacity:0}.invalid{color:var(--danger);font-weight:800}
+.lettergrid{display:grid;gap:8px;align-items:stretch}.tile{aspect-ratio:1;min-width:0;background:#fff;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;font-size:clamp(.9rem,5vw,1.3rem);font-weight:900;user-select:none;cursor:pointer;transition:.14s ease}
+.tile.selected{outline:3px solid #25231f;transform:translateY(-2px)}.tile.used{background:var(--used);color:#8c877e;cursor:default;text-decoration:line-through}
+.compose{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:12px}.selectedreadout{min-height:44px;border:1px dashed #bdb6aa;border-radius:11px;padding:9px 11px;display:flex;align-items:center;font-weight:900;letter-spacing:.08em;background:#faf8f2;overflow:hidden}
+.freegroups{display:grid;gap:13px}.freegroupTitle{margin-bottom:7px;color:var(--muted);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.joins{display:flex;flex-wrap:wrap;gap:7px}.freeBtn{padding:7px 10px;font-size:.82rem}
+.customrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.note{margin-top:10px;font-size:.8rem;line-height:1.4;color:var(--muted)}
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:800;border:1px solid rgba(0,0,0,.07)}
+@media(max-width:520px){header{padding-top:22px}main{padding-left:12px;padding-right:12px}.card{padding:14px}.compose{grid-template-columns:1fr 1fr}.selectedreadout{grid-column:1/-1}.inputrow{grid-template-columns:1fr}.inputrow button{width:100%}}
 </style>
 </head>
 <body>
-<header>
-  <h1>Letterbank</h1>
-  <div class="tagline">Reserve letters. Build chunks. See what’s left.</div>
-</header>
-
+<header><h1>Letterbank</h1><div class="tagline">A visual workbench for finite alphabets.</div></header>
 <main>
-  <div class="stack">
-    <section class="card">
-      <div class="sectiontitle">
-        <h2>Source</h2>
-        <div class="status" id="sourceCount"></div>
-      </div>
-      <div class="inputrow">
-        <input id="sourceInput" type="text" value="Josh Montreuil" placeholder="Enter a word or phrase">
-        <button class="primary" id="loadBtn">Load</button>
-      </div>
-    </section>
+<section class="card">
+<div class="sectiontitle"><h2>Source</h2><div class="status" id="sourceCount"></div></div>
+<div class="inputrow"><input id="sourceInput" type="text" value="Josh Montreuil" placeholder="Enter a word, name, or phrase"><button class="primary" id="loadBtn">Load bank</button></div>
+</section>
 
-    <section class="card">
-      <div class="sectiontitle">
-        <h2>Arrangement</h2>
-        <button class="tiny" id="clearTokensBtn">Clear tokens</button>
-      </div>
-      <div id="workspace" class="workspace"></div>
-      <div class="legend" id="legend"></div>
-    </section>
+<section class="card">
+<div class="sectiontitle"><h2>Arrangement</h2><button class="tiny" id="clearTokensBtn">Clear</button></div>
+<div class="arrangementWrap" id="arrangementWrap" tabindex="0">
+<input id="ghostInput" autocomplete="off" autocapitalize="characters" spellcheck="false">
+<div id="workspace" class="workspace"></div>
+<div class="typingHint"><span>Tap here and type to reserve letters. Space starts a new block.</span><span id="typeStatus"></span></div>
+</div>
+<div class="legend" id="legend"></div>
+</section>
 
-    <section class="card">
-      <div class="sectiontitle">
-        <h2>Letterbank</h2>
-        <div class="status" id="balance"></div>
-      </div>
-      <div id="letterGrid" class="lettergrid"></div>
+<section class="card">
+<div class="sectiontitle"><h2>Letterbank</h2><div class="status" id="balance"></div></div>
+<div id="letterGrid" class="lettergrid"></div>
+<div class="compose"><div id="selectedReadout" class="selectedreadout">Or tap letters to compose a block</div><button id="reserveBtn">Reserve</button><button id="clearSelectionBtn">Clear selection</button></div>
+</section>
 
-      <div class="compose">
-        <div id="selectedReadout" class="selectedreadout">Select letters below</div>
-        <button id="reserveBtn">Reserve</button>
-        <button id="clearSelectionBtn">Clear</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="sectiontitle">
-        <h2>Free joiners</h2>
-        <div class="status">do not consume bank letters</div>
-      </div>
-      <div class="joins">
-        <button class="tiny joinBtn" data-join="&">&amp;</button>
-        <button class="tiny joinBtn" data-join="of">of</button>
-        <button class="tiny joinBtn" data-join="the">the</button>
-        <button class="tiny joinBtn" data-join="and">and</button>
-        <button class="tiny joinBtn" data-join="de">de</button>
-        <button class="tiny joinBtn" data-join="von">von</button>
-        <button class="tiny joinBtn" data-join="Dr.">Dr.</button>
-        <button class="tiny joinBtn" data-join="Mrs.">Mrs.</button>
-        <button class="tiny joinBtn" data-join="Jr.">Jr.</button>
-      </div>
-    </section>
-  </div>
-
-  <aside class="card sidebar">
-    <div class="sectiontitle">
-      <h2>Possible words</h2>
-      <div class="status" id="suggestCount"></div>
-    </div>
-    <div id="suggestions" class="suggestions"></div>
-  </aside>
+<section class="card">
+<div class="sectiontitle"><h2>Free tokens</h2><div class="status">do not consume bank letters</div></div>
+<div class="freegroups">
+<div><div class="freegroupTitle">Titles & suffixes</div><div class="joins">
+<button class="freeBtn" data-free="Mr.">Mr.</button><button class="freeBtn" data-free="Mrs.">Mrs.</button><button class="freeBtn" data-free="Ms.">Ms.</button><button class="freeBtn" data-free="Miss">Miss</button><button class="freeBtn" data-free="Dr.">Dr.</button><button class="freeBtn" data-free="Prof.">Prof.</button><button class="freeBtn" data-free="Rev.">Rev.</button><button class="freeBtn" data-free="Fr.">Fr.</button><button class="freeBtn" data-free="Sr.">Sr.</button><button class="freeBtn" data-free="Jr.">Jr.</button><button class="freeBtn" data-free="II">II</button><button class="freeBtn" data-free="III">III</button><button class="freeBtn" data-free="IV">IV</button>
+</div></div>
+<div><div class="freegroupTitle">Particles & connectors</div><div class="joins">
+<button class="freeBtn" data-free="&">&amp;</button><button class="freeBtn" data-free="and">and</button><button class="freeBtn" data-free="of">of</button><button class="freeBtn" data-free="the">the</button><button class="freeBtn" data-free="de">de</button><button class="freeBtn" data-free="del">del</button><button class="freeBtn" data-free="da">da</button><button class="freeBtn" data-free="di">di</button><button class="freeBtn" data-free="du">du</button><button class="freeBtn" data-free="la">la</button><button class="freeBtn" data-free="le">le</button><button class="freeBtn" data-free="van">van</button><button class="freeBtn" data-free="von">von</button><button class="freeBtn" data-free="bin">bin</button><button class="freeBtn" data-free="ibn">ibn</button>
+</div></div>
+</div>
+<div class="customrow"><input id="customFree" type="text" placeholder="Custom free token"><button id="addCustomFree">Add</button></div>
+<div class="note">Free tokens are deliberately outside the letter accounting. Use them for titles, suffixes, particles, punctuation, or any house-rule exception you choose.</div>
+</section>
 </main>
 
 <script>
-const COLORS = [
-  "#b8d8ff","#ffe49b","#c7f2c2","#f7bdd5","#d8c8ff",
-  "#bce9e5","#ffc8a8","#e7ef9f","#d9d9d9","#ffd2ef"
-];
-
-const WORDS = `
-homer tom juliet joliet jolie julie julia julio jules juno junior
-monster mortino ostrom holstrom thorson munro storm north mount hunt
-morton horton moore simon ruth joel louis justin emil mason orson
-mansour house autumn tuna tounis morino holmes thomas john josh
-more most tone torn sort sour tour ours rust suit unit ruin trio trim
-moon room root loom soon motor honor humor hour home hero host shot
-this thin hint into lion loin line mile mine mint minor norm north
-south stone storm stout thorn thorny mount mouth month mourn
-shore short shout shirt shoot sumo omit item time tire tier rite
-role lore lone tone note tune unto route outer urine union
-jolt joint join joust jute june ruin rune true rule soul soil
-hotel motel torso metro timer title little
-`.trim().split(/\s+/);
-
-let letters = [];
-let selectedIds = [];
-let tokens = [];
-let tokenCounter = 0;
-
-const normalize = s => s.toUpperCase().replace(/[^A-Z]/g, "");
+const COLORS=["#b8d8ff","#ffe49b","#c7f2c2","#f7bdd5","#d8c8ff","#bce9e5","#ffc8a8","#e7ef9f","#d9d9d9","#ffd2ef"];
+let letters=[],selectedIds=[],tokens=[],tokenCounter=0,activeTypedTokenId=null,dragTokenId=null;
+const normalize=s=>s.toUpperCase().replace(/[^A-Z]/g,"");
 
 function loadSource(){
-  const raw = document.getElementById("sourceInput").value;
-  const clean = normalize(raw);
-  letters = [...clean].map((ch,i)=>({id:i,ch,usedBy:null}));
-  selectedIds = [];
-  tokens = [];
-  tokenCounter = 0;
-  renderAll();
+  const clean=normalize(document.getElementById("sourceInput").value);
+  letters=[...clean].map((ch,i)=>({id:i,ch,usedBy:null}));
+  selectedIds=[];tokens=[];tokenCounter=0;activeTypedTokenId=null;renderAll();
 }
-
-function countsFromChars(chars){
-  const c = {};
-  for(const ch of chars) c[ch] = (c[ch]||0)+1;
-  return c;
+function getAvailableLetter(ch){return letters.find(l=>!l.usedBy&&l.ch===ch)||null}
+function createLetterToken(text,ids){
+  const id="t"+(++tokenCounter), token={id,text,color:COLORS[(tokenCounter-1)%COLORS.length],ids:[...ids],free:false};
+  tokens.push(token);ids.forEach(letterId=>{const l=letters.find(x=>x.id===letterId);if(l)l.usedBy=id});return token;
 }
-function availableCounts(){
-  return countsFromChars(letters.filter(l=>!l.usedBy).map(l=>l.ch));
-}
-function canBuild(word, counts=availableCounts()){
-  const need = countsFromChars(normalize(word));
-  return Object.entries(need).every(([ch,n]) => (counts[ch]||0) >= n);
-}
-function getIdsForWord(word){
-  const needed = [...normalize(word)];
-  const picked = [];
-  const tempUsed = new Set();
-  for(const ch of needed){
-    const match = letters.find(l=>!l.usedBy && !tempUsed.has(l.id) && l.ch===ch);
-    if(!match) return null;
-    picked.push(match.id);
-    tempUsed.add(match.id);
-  }
-  return picked;
-}
-
-function reserveSelected(){
-  if(!selectedIds.length) return;
-  const text = selectedIds.map(id=>letters.find(l=>l.id===id).ch).join("");
-  createToken(text, selectedIds);
-  selectedIds = [];
-  renderAll();
-}
-
-function createToken(text, ids){
-  const id = "t"+(++tokenCounter);
-  const color = COLORS[(tokenCounter-1)%COLORS.length];
-  tokens.push({id,text,color,ids:[...ids],joiner:false});
-  ids.forEach(letterId => {
-    const l = letters.find(x=>x.id===letterId);
-    if(l) l.usedBy = id;
-  });
-}
-
-function reserveWord(word){
-  const ids = getIdsForWord(word);
-  if(!ids) return;
-  createToken(word.toUpperCase(), ids);
-  selectedIds = [];
-  renderAll();
-}
-
-function addJoiner(text){
-  tokens.push({
-    id:"j"+(++tokenCounter),
-    text,
-    color:"#ece8df",
-    ids:[],
-    joiner:true
-  });
-  renderAll();
-}
-
+function addFreeToken(text){text=text.trim();if(!text)return;tokens.push({id:"f"+(++tokenCounter),text,color:"#e9e5dc",ids:[],free:true});activeTypedTokenId=null;renderAll()}
 function removeToken(id){
-  const token = tokens.find(t=>t.id===id);
-  if(!token) return;
-  token.ids.forEach(letterId=>{
-    const l = letters.find(x=>x.id===letterId);
-    if(l) l.usedBy = null;
-  });
-  tokens = tokens.filter(t=>t.id!==id);
-  renderAll();
+  const t=tokens.find(x=>x.id===id);if(!t)return;
+  t.ids.forEach(letterId=>{const l=letters.find(x=>x.id===letterId);if(l)l.usedBy=null});
+  tokens=tokens.filter(x=>x.id!==id);if(activeTypedTokenId===id)activeTypedTokenId=null;renderAll();
 }
-
-function clearTokens(){
-  letters.forEach(l=>l.usedBy=null);
-  tokens=[];
-  selectedIds=[];
-  renderAll();
+function flashInvalid(ch){
+  const el=document.getElementById("typeStatus");el.textContent=`No ${ch} remaining`;el.className="invalid";
+  clearTimeout(flashInvalid.timer);flashInvalid.timer=setTimeout(()=>{el.textContent="";el.className=""},900);
 }
+function typeLetter(ch){
+  ch=ch.toUpperCase();const l=getAvailableLetter(ch);if(!l){flashInvalid(ch);return}
+  let token=tokens.find(t=>t.id===activeTypedTokenId&&!t.free);
+  if(!token){token=createLetterToken("",[]);activeTypedTokenId=token.id}
+  token.text+=ch;token.ids.push(l.id);l.usedBy=token.id;renderAll();
+}
+function typeBackspace(){
+  const t=tokens.find(x=>x.id===activeTypedTokenId&&!x.free);if(!t||!t.ids.length)return;
+  const id=t.ids.pop(),l=letters.find(x=>x.id===id);if(l)l.usedBy=null;t.text=t.text.slice(0,-1);
+  if(!t.text){tokens=tokens.filter(x=>x.id!==t.id);activeTypedTokenId=null}renderAll();
+}
+function endTypedToken(){activeTypedTokenId=null;renderAll()}
+function reserveSelected(){
+  if(!selectedIds.length)return;const text=selectedIds.map(id=>letters.find(l=>l.id===id).ch).join("");
+  createLetterToken(text,selectedIds);selectedIds=[];activeTypedTokenId=null;renderAll();
+}
+function clearTokens(){letters.forEach(l=>l.usedBy=null);tokens=[];selectedIds=[];activeTypedTokenId=null;renderAll()}
 
+function chooseColumns(n,width){
+  if(n<=0)return 1;
+  const minTile=42,maxCols=Math.max(1,Math.min(n,Math.floor((width+8)/(minTile+8))));
+  let best=1,bestScore=Infinity;
+  for(let cols=1;cols<=maxCols;cols++){
+    const rows=Math.ceil(n/cols),empty=rows*cols-n,tileWidth=(width-(cols-1)*8)/cols;
+    const sizePenalty=Math.abs(tileWidth-58)/18,skinnyPenalty=rows>4?(rows-4)*1.3:0;
+    const score=empty*4+sizePenalty+skinnyPenalty;
+    if(score<bestScore){bestScore=score;best=cols}
+  }
+  return best;
+}
+function resizeLetterGrid(){
+  const grid=document.getElementById("letterGrid"),width=grid.clientWidth||300,cols=chooseColumns(letters.length,width);
+  grid.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`;
+}
 function renderWorkspace(){
-  const el = document.getElementById("workspace");
-  el.innerHTML="";
-  tokens.forEach(t=>{
-    const node = document.createElement("div");
-    if(t.joiner){
-      node.className="joiner";
-      node.textContent=t.text;
-    } else {
-      node.className="token";
-      node.style.setProperty("--token-color",t.color);
-      [...t.text].forEach(ch=>{
-        const s=document.createElement("span");
-        s.textContent=ch;
-        node.appendChild(s);
-      });
-    }
-    node.title="Click to release";
-    node.onclick=()=>removeToken(t.id);
-    el.appendChild(node);
+  const el=document.getElementById("workspace");el.innerHTML="";
+  tokens.forEach((t,index)=>{
+    const node=document.createElement("div");node.dataset.id=t.id;node.dataset.index=index;node.className=t.free?"joiner":"token";
+    if(!t.free)node.style.setProperty("--token-color",t.color);
+    if(t.free){node.textContent=t.text}else{[...t.text].forEach(ch=>{const s=document.createElement("span");s.textContent=ch;node.appendChild(s)})}
+    node.title="Drag to reorder. Double-click/tap to release.";node.addEventListener("dblclick",e=>{e.stopPropagation();removeToken(t.id)});
+    attachPointerDrag(node,t.id);el.appendChild(node);
   });
-
-  const remaining = letters.filter(l=>!l.usedBy).length;
-  for(let i=0;i<remaining;i++){
-    const b=document.createElement("div");
-    b.className="blank";
-    el.appendChild(b);
-  }
-}
-
-function renderLetters(){
-  const grid=document.getElementById("letterGrid");
-  grid.innerHTML="";
-  letters.forEach(l=>{
-    const d=document.createElement("div");
-    d.className="tile";
-    d.textContent=l.ch;
-    if(l.usedBy) d.classList.add("used");
-    if(selectedIds.includes(l.id)) d.classList.add("selected");
-    d.onclick=()=>{
-      if(l.usedBy) return;
-      if(selectedIds.includes(l.id)){
-        selectedIds=selectedIds.filter(x=>x!==l.id);
-      } else {
-        selectedIds.push(l.id);
-      }
-      renderLetters();
-      renderSelected();
-    };
-    grid.appendChild(d);
-  });
-}
-
-function renderSelected(){
-  const txt=selectedIds.map(id=>letters.find(l=>l.id===id).ch).join("");
-  document.getElementById("selectedReadout").textContent = txt || "Select letters below";
-}
-
-function renderLegend(){
-  const legend=document.getElementById("legend");
-  legend.innerHTML="";
-  tokens.filter(t=>!t.joiner).forEach(t=>{
-    const chip=document.createElement("div");
-    chip.className="chip";
-    chip.style.background=t.color;
-    chip.textContent=t.text;
-    legend.appendChild(chip);
-  });
-}
-
-function renderSuggestions(){
-  const box=document.getElementById("suggestions");
-  box.innerHTML="";
-  const counts=availableCounts();
-  const availCount=letters.filter(l=>!l.usedBy).length;
-  let matches=[...new Set(WORDS)]
-    .filter(w=>normalize(w).length>=2 && normalize(w).length<=availCount && canBuild(w,counts))
-    .sort((a,b)=> b.length-a.length || a.localeCompare(b));
-
-  document.getElementById("suggestCount").textContent = matches.length+" found";
-  if(!matches.length){
-    box.innerHTML='<div class="empty">No built-in suggestions fit the remaining letters. You can still reserve tiles manually.</div>';
-    return;
-  }
-
-  matches.slice(0,120).forEach(w=>{
-    const btn=document.createElement("button");
-    btn.className="suggestion";
-    btn.innerHTML=`<span>${w}</span><small>${w.length}</small>`;
-    btn.onclick=()=>reserveWord(w);
-    box.appendChild(btn);
-  });
-}
-
-function renderStats(){
-  const total=letters.length;
   const remaining=letters.filter(l=>!l.usedBy).length;
-  document.getElementById("sourceCount").textContent = total+" letters";
-  document.getElementById("balance").textContent = remaining+" remaining";
+  for(let i=0;i<remaining;i++){const b=document.createElement("div");b.className="blank";el.appendChild(b)}
 }
-
-function renderAll(){
-  renderWorkspace();
-  renderLetters();
-  renderSelected();
-  renderLegend();
-  renderSuggestions();
-  renderStats();
+function attachPointerDrag(node,id){
+  let started=false,startX=0,startY=0;
+  node.addEventListener("pointerdown",e=>{startX=e.clientX;startY=e.clientY;dragTokenId=id;started=false;node.setPointerCapture?.(e.pointerId)});
+  node.addEventListener("pointermove",e=>{
+    if(dragTokenId!==id)return;const dist=Math.hypot(e.clientX-startX,e.clientY-startY);if(dist<7&&!started)return;
+    started=true;node.classList.add("dragging");
+    const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.(".token,.joiner");
+    document.querySelectorAll(".dropbefore,.dropafter").forEach(x=>x.classList.remove("dropbefore","dropafter"));
+    if(target&&target.dataset.id&&target.dataset.id!==id){const r=target.getBoundingClientRect(),after=e.clientX>r.left+r.width/2;target.classList.add(after?"dropafter":"dropbefore")}
+  });
+  node.addEventListener("pointerup",e=>{
+    if(dragTokenId!==id)return;node.classList.remove("dragging");
+    if(started){
+      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.(".token,.joiner");
+      if(target&&target.dataset.id&&target.dataset.id!==id){
+        const from=tokens.findIndex(t=>t.id===id);let to=tokens.findIndex(t=>t.id===target.dataset.id);const r=target.getBoundingClientRect(),after=e.clientX>r.left+r.width/2;
+        const [moving]=tokens.splice(from,1);if(from<to)to--;tokens.splice(to+(after?1:0),0,moving);
+      }
+    }
+    dragTokenId=null;document.querySelectorAll(".dropbefore,.dropafter").forEach(x=>x.classList.remove("dropbefore","dropafter"));renderAll();
+  });
+  node.addEventListener("pointercancel",()=>{dragTokenId=null;renderAll()});
 }
+function renderLetters(){
+  const grid=document.getElementById("letterGrid");grid.innerHTML="";
+  letters.forEach(l=>{
+    const d=document.createElement("div");d.className="tile";d.textContent=l.ch;if(l.usedBy)d.classList.add("used");if(selectedIds.includes(l.id))d.classList.add("selected");
+    d.onclick=()=>{if(l.usedBy)return;if(selectedIds.includes(l.id))selectedIds=selectedIds.filter(x=>x!==l.id);else selectedIds.push(l.id);renderLetters();renderSelected()};
+    grid.appendChild(d);
+  });requestAnimationFrame(resizeLetterGrid);
+}
+function renderSelected(){const txt=selectedIds.map(id=>letters.find(l=>l.id===id).ch).join("");document.getElementById("selectedReadout").textContent=txt||"Or tap letters to compose a block"}
+function renderLegend(){
+  const legend=document.getElementById("legend");legend.innerHTML="";
+  tokens.filter(t=>!t.free).forEach(t=>{const chip=document.createElement("div");chip.className="chip";chip.style.background=t.color;chip.textContent=t.text;legend.appendChild(chip)});
+}
+function renderStats(){
+  const total=letters.length,remaining=letters.filter(l=>!l.usedBy).length;
+  document.getElementById("sourceCount").textContent=`${total} letters`;document.getElementById("balance").textContent=`${remaining} remaining`;
+}
+function renderAll(){renderWorkspace();renderLetters();renderSelected();renderLegend();renderStats()}
 
-document.getElementById("loadBtn").onclick=loadSource;
-document.getElementById("reserveBtn").onclick=reserveSelected;
-document.getElementById("clearSelectionBtn").onclick=()=>{selectedIds=[];renderLetters();renderSelected();};
-document.getElementById("clearTokensBtn").onclick=clearTokens;
-document.querySelectorAll(".joinBtn").forEach(b=>b.onclick=()=>addJoiner(b.dataset.join));
-document.getElementById("sourceInput").addEventListener("keydown",e=>{
-  if(e.key==="Enter") loadSource();
+const arrangementWrap=document.getElementById("arrangementWrap"),ghostInput=document.getElementById("ghostInput");
+arrangementWrap.addEventListener("click",e=>{if(e.target.closest(".token,.joiner"))return;ghostInput.focus({preventScroll:true})});
+arrangementWrap.addEventListener("keydown",e=>{
+  if(e.key==="Backspace"){e.preventDefault();typeBackspace()}
+  else if(e.key===" "||e.key==="Enter"){e.preventDefault();endTypedToken()}
+  else if(/^[a-zA-Z]$/.test(e.key)){e.preventDefault();typeLetter(e.key)}
 });
+ghostInput.addEventListener("input",e=>{const value=normalize(e.target.value);if(value){[...value].forEach(typeLetter);e.target.value=""}});
+ghostInput.addEventListener("keydown",e=>{if(e.key==="Backspace"){e.preventDefault();typeBackspace()}else if(e.key===" "||e.key==="Enter"){e.preventDefault();endTypedToken();e.target.value=""}});
 
+document.getElementById("loadBtn").onclick=loadSource;document.getElementById("reserveBtn").onclick=reserveSelected;
+document.getElementById("clearSelectionBtn").onclick=()=>{selectedIds=[];renderLetters();renderSelected()};document.getElementById("clearTokensBtn").onclick=clearTokens;
+document.querySelectorAll("[data-free]").forEach(b=>{b.onclick=()=>addFreeToken(b.dataset.free)});
+document.getElementById("addCustomFree").onclick=()=>{const input=document.getElementById("customFree");addFreeToken(input.value);input.value=""};
+document.getElementById("customFree").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("addCustomFree").click()}});
+document.getElementById("sourceInput").addEventListener("keydown",e=>{if(e.key==="Enter")loadSource()});
+new ResizeObserver(resizeLetterGrid).observe(document.getElementById("letterGrid"));
 loadSource();
 </script>
 </body>
